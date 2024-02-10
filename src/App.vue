@@ -21,13 +21,17 @@ navigator.geolocation.getCurrentPosition((position) => console.log(position));
 </template>
 
 <style scoped>
-.wrapper {
-  padding: 40px 140px;
-}
 .wrapper__top,
 .wrapper__bottom {
   display: flex;
-  gap: 60px;
-  margin-top: 40px;
+  gap: 80px;
+}
+
+.wrapper__top {
+  margin-bottom: 60px;
+}
+
+.wrapper__bottom {
+  justify-content: space-between;
 }
 </style>

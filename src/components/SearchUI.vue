@@ -1,10 +1,35 @@
-<script setup></script>
+<script setup>
+import { ref } from 'vue';
+
+const apiKey = '&appid=df57d4e39636b7a56315b864ca166989';
+
+let searchByCityName = 'https://api.openweathermap.org/data/2.5/weather?q=';
+
+const searchInput = ref('');
+const cityDate = ref({
+  name: String,
+  region: String,
+  temperature: String,
+  weatherType: String,
+  date: String
+});
+
+const searchBy = async () => {
+  const response = await fetch(searchByCityName + searchInput.value + apiKey);
+  const data = await response.json();
+  cityDate.value.name = data.name;
+  cityDate.value.region = data.sys.country;
+  cityDate.value.temperature = Math.round(data.main.temp - 273);
+  console.log(cityDate.value);
+};
+</script>
 
 <template>
   <section class="wrapper__search">
     <div class="wrapper__input-block">
-      <input class="wrapper__search_input" type="text" />
+      <input v-model="searchInput" class="wrapper__search_input" type="text" />
       <img
+        @click="searchBy"
         class="wrapper__search_img"
         src="../assets/general-imgs/magnifying-glass-svgrepo-com.svg"
         alt="lupa"

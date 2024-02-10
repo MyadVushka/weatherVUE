@@ -1,52 +1,26 @@
-<script setup></script>
+<script setup>
+import DisplayUI from './DisplayUI.vue';
+</script>
 
 <template>
   <section class="wrapper__hightlight">
     <h1>Today's Highlights</h1>
     <div class="wrapper__bottom">
-      <div class="wrapper__displays">
-        <div class="wrapper__displays-block top">
-          <h2 class="wrapper__displays-top_main-text">Wind</h2>
-          <img
-            class="wrapper__display-top_img"
-            src="../assets/general-imgs/wind-icon.svg"
-            alt="wind"
-          />
-          <div class="wrapper__displays-top_main-bottom-block">
-            <span>3.6 m/s</span>
-            <span>350 deg</span>
-          </div>
-        </div>
-        <div class="wrapper__displays-block bottom">
-          <p>Wind gusts</p>
-          <p>8.4 m/s</p>
-        </div>
-      </div>
-      <div class="wrapper__displays">
-        <div class="wrapper__displays-block top">
-          <h2 class="wrapper__displays-top_main-text">Pressure</h2>
-          <img
-            class="wrapper__display-top_img"
-            src="../assets/general-imgs/pressure.svg"
-            alt="pressure"
-          />
-          <div class="wrapper__displays-top_main-bottom-block">
-            <span>765 mm</span>
-          </div>
-        </div>
-        <div class="wrapper__displays-block bottom">
-          <p>Feels like</p>
-          <p>21 C</p>
-        </div>
-      </div>
-      <div class="wrapper__displays">
-        <div class="wrapper__displays-block top">
-          <h2 class="wrapper__displays-top_main-text">Sunrise and sunset</h2>
-          <img src="" alt="" />
-          <div class="wrapper__displays-top_main-bottom-block"></div>
-        </div>
-        <div class="wrapper__displays-block bottom"></div>
-      </div>
+      <DisplayUI
+        :displayTypeSrc="'/src/assets/general-imgs/wind-icon.svg'"
+        :displayTypeTitle="'Wind'"
+        :displayInfoOne="'3.6'"
+        :displayInfoTwo="'m/s'"
+        :displayInfoThree="'Wind gusts'"
+        :displayInfoFour="'8.4 m/s'"
+      />
+      <DisplayUI
+        :displayTypeSrc="'/src/assets/general-imgs/pressure.svg'"
+        :displayTypeTitle="'Pressure'"
+        :displayInfoOne="'765 mm'"
+        :displayInfoThree="'Feels like'"
+        :displayInfoFour="'21 C'"
+      />
     </div>
   </section>
 </template>
