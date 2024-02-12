@@ -1,26 +1,64 @@
 <script setup>
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 
 const apiKey = '&appid=df57d4e39636b7a56315b864ca166989';
 
 let searchByCityName = 'https://api.openweathermap.org/data/2.5/weather?q=';
 
 const searchInput = ref('');
-const cityDate = ref({
-  name: String,
-  region: String,
+// const cityDate = ref();
+
+const cityDate = reactive({
   temperature: String,
-  weatherType: String,
-  date: String
+  city: String,
+  region: String,
+  weather: String,
+  time: String,
+  flag: 0
 });
 
+const weatherIMG = ref('');
+
+const toValidTime = (timezone) => {
+  const date = new Date();
+  date.setHours(date.getHours() - 3 + timezone / 3600);
+  return date.getMinutes() < 10
+    ? date.getHours() + ':0' + date.getMinutes()
+    : date.getHours() + ':' + date.getMinutes();
+};
+
+const weatherTypes = new Map([
+  ['Clouds', '/src/assets/weatherIMGS/cloudy.svg'],
+  ['Thundersotrm', '/src/assets/weatherIMGS/thunder.svg'],
+  ['Drizzle', '/src/assets/weatherIMGS/raining.svg'],
+  ['Mist', '/src/assets/weatherIMGS/mist.svg'],
+  ['Rain', '/src/assets/weatherIMGS/raining.svg'],
+  ['Snow', '/src/assets/weatherIMGS/snow.svg']
+]);
+const toValidWeather = (weatherType, timezone) => {
+  if (weatherTypes.has(weatherType)) {
+    weatherIMG.value = weatherTypes.get(weatherType);
+  } else if (weatherType === 'Clear') {
+    const date = Number(toValidTime(timezone).split(':')[0]);
+    weatherIMG.value =
+      date.getHours() >= 6 && date.getHours() <= 19
+        ? '/src/assets/weatherIMGS/day.svg'
+        : '/src/assets/weatherIMGS/night.svg';
+  }
+  return weatherIMG;
+};
 const searchBy = async () => {
+  cityDate.flag = 0;
   const response = await fetch(searchByCityName + searchInput.value + apiKey);
   const data = await response.json();
-  cityDate.value.name = data.name;
-  cityDate.value.region = data.sys.country;
-  cityDate.value.temperature = Math.round(data.main.temp - 273);
-  console.log(cityDate.value);
+  cityDate.city = data.name;
+  cityDate.region = data.sys.country;
+  cityDate.temperature = Math.round(data.main.temp - 273);
+  cityDate.weather = '/src/assets/weatherIMGS/day.svg';
+  cityDate.weather = toValidWeather(data['weather'][0]['main'], data.timezone);
+  cityDate.time = toValidTime(data.timezone);
+  console.log(data);
+  cityDate.flag = 1;
 };
 </script>
 
@@ -35,10 +73,11 @@ const searchBy = async () => {
         alt="lupa"
       />
     </div>
-    <div class="wrapper__weather-main">
-      <img class="wrapper__search-info_img" src="../assets/weatherIMGS/cloudy.svg" alt="weather" />
-      <h1 class="wrapper__weather-info_gradus">14 C</h1>
-      <p class="wrapper__weather-info_forecast-type">Thunderstorm</p>
+    <div class="wrapper__weather-main" v-if="cityDate.flag === 1">
+      <img class="wrapper__search-info_img" :src="cityDate.weather" alt="weather" />
+
+      <h1 class="wrapper__weather-info_gradus">{{ cityDate.temperature }} C</h1>
+      <p class="wrapper__weather-info_forecast-type"></p>
     </div>
     <div class="border"></div>
     <div class="wrapper__weather-secondary">
@@ -48,15 +87,19 @@ const searchBy = async () => {
           src="../assets/general-imgs/geolocation.svg"
           alt="geolocation"
         />
-        <p>Paris, FR</p>
+        <p v-if="cityDate.flag === 1">{{ cityDate.city }}, {{ cityDate.region }}</p>
       </div>
       <div class="wrapper__weather-secondary_date">
         <img
           class="wrapper__weather-secondary_img"
           src="../assets/general-imgs/calendar.svg"
-          alt=""
+          alt="calendar"
         />
         <p>Thu, February 9, 2024</p>
+      </div>
+      <div class="wrapper__weather-secondary-time">
+        <img class="wrapper__weather-secondary_img" src="../assets/general-imgs/clock.svg" alt="" />
+        <p v-if="cityDate.flag === 1">{{ cityDate.time }}</p>
       </div>
     </div>
   </section>
@@ -118,9 +161,11 @@ const searchBy = async () => {
   width: 30px;
 }
 .wrapper__weather-secondary_geo,
-.wrapper__weather-secondary_date {
+.wrapper__weather-secondary_date,
+.wrapper__weather-secondary-time {
   display: flex;
   align-items: center;
   gap: 15px;
+  height: 60px;
 }
 </style>
