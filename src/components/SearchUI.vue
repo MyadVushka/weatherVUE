@@ -1,12 +1,29 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import ListUI from './ListUI.vue';
+import { reactive, ref, watch } from 'vue';
+import debounce from 'lodash.debounce';
+
+defineProps({
+  cityList: Array,
+})
 
 const apiKey = '&appid=df57d4e39636b7a56315b864ca166989';
 
 let searchByCityName = 'https://api.openweathermap.org/data/2.5/weather?q=';
+const URLCitiesList = 'http://api.openweathermap.org/geo/1.0/direct?q=';
+const searchLimit = '&limit=5';
+const cityListRef = ref([]);
 
 const searchInput = ref('');
-// const cityDate = ref();
+
+const weatherTypes = new Map([
+  ['Clouds', '/src/assets/weatherIMGS/cloudy.svg'],
+  ['Thundersotrm', '/src/assets/weatherIMGS/thunder.svg'],
+  ['Drizzle', '/src/assets/weatherIMGS/raining.svg'],
+  ['Mist', '/src/assets/weatherIMGS/mist.svg'],
+  ['Rain', '/src/assets/weatherIMGS/raining.svg'],
+  ['Snow', '/src/assets/weatherIMGS/snow.svg']
+]);
 
 const cityDate = reactive({
   temperature: String,
@@ -27,14 +44,13 @@ const toValidTime = (timezone) => {
     : date.getHours() + ':' + date.getMinutes();
 };
 
-const weatherTypes = new Map([
-  ['Clouds', '/src/assets/weatherIMGS/cloudy.svg'],
-  ['Thundersotrm', '/src/assets/weatherIMGS/thunder.svg'],
-  ['Drizzle', '/src/assets/weatherIMGS/raining.svg'],
-  ['Mist', '/src/assets/weatherIMGS/mist.svg'],
-  ['Rain', '/src/assets/weatherIMGS/raining.svg'],
-  ['Snow', '/src/assets/weatherIMGS/snow.svg']
-]);
+const searchListCities = async () => {
+  const cities = await fetch(URLCitiesList + searchInput.value + searchLimit + apiKey);
+  const response = await cities.json();
+
+  return response;
+};
+
 const toValidWeather = (weatherType, timezone) => {
   if (weatherTypes.has(weatherType)) {
     weatherIMG.value = weatherTypes.get(weatherType);
@@ -48,24 +64,42 @@ const toValidWeather = (weatherType, timezone) => {
   return weatherIMG;
 };
 const searchBy = async () => {
-  cityDate.flag = 0;
-  const response = await fetch(searchByCityName + searchInput.value + apiKey);
-  const data = await response.json();
-  cityDate.city = data.name;
-  cityDate.region = data.sys.country;
-  cityDate.temperature = Math.round(data.main.temp - 273);
-  cityDate.weather = '/src/assets/weatherIMGS/day.svg';
-  cityDate.weather = toValidWeather(data['weather'][0]['main'], data.timezone);
-  cityDate.time = toValidTime(data.timezone);
-  console.log(data);
-  cityDate.flag = 1;
+  try {
+    const response = await fetch(searchByCityName + searchInput.value + apiKey);
+    const data = await response.json();
+    cityDate.city = data.name;
+    cityDate.region = data.sys.country;
+    cityDate.temperature = Math.round(data.main.temp - 273);
+    cityDate.weather = '/src/assets/weatherIMGS/day.svg';
+    cityDate.weather = toValidWeather(data['weather'][0]['main'], data.timezone);
+    cityDate.time = toValidTime(data.timezone);
+    console.log(data);
+    cityDate.flag = 1;
+  } catch (err) {
+    cityDate.flag = 0;
+    alert('Invalid city');
+  }
 };
+
+let debounceHandler = debounce(async function () {
+  console.log(searchInput.value);
+  const citiesList = await searchListCities();
+  cityListRef.value = citiesList;
+  console.log(citiesList);
+}, 1000);
+
+watch(searchInput, debounceHandler);
 </script>
 
 <template>
   <section class="wrapper__search">
     <div class="wrapper__input-block">
-      <input v-model="searchInput" class="wrapper__search_input" type="text" />
+      <input
+        v-model="searchInput"
+        class="wrapper__search_input"
+        @input="debounceHandler"
+        type="text"
+      />
       <img
         @click="searchBy"
         class="wrapper__search_img"
@@ -73,9 +107,9 @@ const searchBy = async () => {
         alt="lupa"
       />
     </div>
+    <ListUI v-if="cityDate.flag === 1" :cityList="cityListRef" />
     <div class="wrapper__weather-main" v-if="cityDate.flag === 1">
       <img class="wrapper__search-info_img" :src="cityDate.weather" alt="weather" />
-
       <h1 class="wrapper__weather-info_gradus">{{ cityDate.temperature }} C</h1>
       <p class="wrapper__weather-info_forecast-type"></p>
     </div>
@@ -117,6 +151,7 @@ const searchBy = async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: relative;
 }
 
 .wrapper__search_input {
