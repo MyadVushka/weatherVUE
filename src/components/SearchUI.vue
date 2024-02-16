@@ -1,18 +1,20 @@
 <script setup>
-import ListUI from './ListUI.vue';
+// import ListUI from './ListUI.vue';
 import { reactive, ref, watch } from 'vue';
 import debounce from 'lodash.debounce';
 
 defineProps({
-  cityList: Array,
-})
+  cityList: Array
+});
 
 const apiKey = '&appid=df57d4e39636b7a56315b864ca166989';
 
-let searchByCityName = 'https://api.openweathermap.org/data/2.5/weather?q=';
+let searchLat = 'https://api.openweathermap.org/data/2.5/weather?lat=';
+let searchLon = '&lon=';
 const URLCitiesList = 'http://api.openweathermap.org/geo/1.0/direct?q=';
 const searchLimit = '&limit=5';
 const cityListRef = ref([]);
+const listVisibility = ref('true');
 
 const searchInput = ref('');
 
@@ -45,6 +47,9 @@ const toValidTime = (timezone) => {
 };
 
 const searchListCities = async () => {
+  if (searchInput.value.length < 2) {
+    return;
+  }
   const cities = await fetch(URLCitiesList + searchInput.value + searchLimit + apiKey);
   const response = await cities.json();
 
@@ -63,9 +68,13 @@ const toValidWeather = (weatherType, timezone) => {
   }
   return weatherIMG;
 };
-const searchBy = async () => {
+const searchBy = async (...args) => {
+  listVisibility.value = false;
+  if (searchInput.value < 2) {
+    return;
+  }
   try {
-    const response = await fetch(searchByCityName + searchInput.value + apiKey);
+    const response = await fetch(searchLat + args[0] + searchLon + args[1] + apiKey);
     const data = await response.json();
     cityDate.city = data.name;
     cityDate.region = data.sys.country;
@@ -82,11 +91,13 @@ const searchBy = async () => {
 };
 
 let debounceHandler = debounce(async function () {
-  console.log(searchInput.value);
-  const citiesList = await searchListCities();
-  cityListRef.value = citiesList;
-  console.log(citiesList);
-}, 1000);
+  if (searchInput.value.length > 2) {
+    const citiesList = await searchListCities();
+    cityListRef.value = citiesList;
+  } else {
+    listVisibility.value = false;
+  }
+}, 400);
 
 watch(searchInput, debounceHandler);
 </script>
@@ -99,15 +110,25 @@ watch(searchInput, debounceHandler);
         class="wrapper__search_input"
         @input="debounceHandler"
         type="text"
+        @click="listVisibility = true"
       />
       <img
-        @click="searchBy"
         class="wrapper__search_img"
         src="../assets/general-imgs/magnifying-glass-svgrepo-com.svg"
         alt="lupa"
       />
+      <div class="wrapper__city-list" v-if="cityListRef.length > 0" v-show="listVisibility">
+        <ul>
+          <li
+            v-for="(city, index) in cityListRef"
+            :key="index"
+            @click="searchBy(city.lat, city.lon)"
+          >
+            {{ city.name }} {{ city.country }} {{ city.state ? city.state : '' }}
+          </li>
+        </ul>
+      </div>
     </div>
-    <ListUI v-if="cityDate.flag === 1" :cityList="cityListRef" />
     <div class="wrapper__weather-main" v-if="cityDate.flag === 1">
       <img class="wrapper__search-info_img" :src="cityDate.weather" alt="weather" />
       <h1 class="wrapper__weather-info_gradus">{{ cityDate.temperature }} C</h1>
@@ -202,5 +223,27 @@ watch(searchInput, debounceHandler);
   align-items: center;
   gap: 15px;
   height: 60px;
+}
+
+.wrapper__city-list {
+  position: absolute;
+  top: 125%;
+  width: 100%;
+  border-radius: 15px;
+  background-color: rgb(253, 238, 238);
+}
+ul {
+  padding: 0 10px;
+}
+li {
+  padding: 10px;
+  color: black;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+li:hover {
+  background-color: rgba(0, 0, 0, 0.065);
 }
 </style>

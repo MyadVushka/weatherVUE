@@ -3,7 +3,7 @@
 <template>
   <section class="wrapper__list">
     <ul>
-      <li v-for="city in cityList" >city</li>
+      <li v-for="city in cityList" >{{city}}</li>
     </ul>
   </section>
 </template>
