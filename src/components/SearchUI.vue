@@ -1,11 +1,8 @@
 <script setup>
-// import ListUI from './ListUI.vue';
 import { reactive, ref, watch } from 'vue';
 import debounce from 'lodash.debounce';
 
-defineProps({
-  cityList: Array
-});
+const emits = defineEmits(['cityInfo']);
 
 const apiKey = '&appid=df57d4e39636b7a56315b864ca166989';
 
@@ -14,7 +11,7 @@ let searchLon = '&lon=';
 const URLCitiesList = 'http://api.openweathermap.org/geo/1.0/direct?q=';
 const searchLimit = '&limit=5';
 const cityListRef = ref([]);
-const listVisibility = ref('true');
+const listVisibility = ref(false);
 
 const searchInput = ref('');
 
@@ -27,6 +24,31 @@ const weatherTypes = new Map([
   ['Snow', '/src/assets/weatherIMGS/snow.svg']
 ]);
 
+const days = new Map([
+  [0, 'Sunday'],
+  [1, 'Monday'],
+  [2, 'Tuesday'],
+  [3, 'Wednesday'],
+  [4, 'Thursday'],
+  [5, 'Friday'],
+  [6, 'Saturday']
+]);
+
+const monthes = new Map([
+  [0, 'January'],
+  [1, 'February'],
+  [2, 'March'],
+  [3, 'April'],
+  [4, 'May'],
+  [5, 'June'],
+  [6, 'July'],
+  [7, 'August'],
+  [8, 'September'],
+  [9, 'October'],
+  [10, 'November'],
+  [11, 'December']
+]);
+
 const cityDate = reactive({
   temperature: String,
   city: String,
@@ -37,6 +59,18 @@ const cityDate = reactive({
 });
 
 const weatherIMG = ref('');
+
+const toValidDate = () => {
+  let date = new Date();
+  return (date =
+    days.get(date.getDay()) +
+    ', ' +
+    date.getDate() +
+    ' ' +
+    monthes.get(date.getMonth()) +
+    ' ' +
+    date.getFullYear());
+};
 
 const toValidTime = (timezone) => {
   const date = new Date();
@@ -82,7 +116,8 @@ const searchBy = async (...args) => {
     cityDate.weather = '/src/assets/weatherIMGS/day.svg';
     cityDate.weather = toValidWeather(data['weather'][0]['main'], data.timezone);
     cityDate.time = toValidTime(data.timezone);
-    console.log(data);
+
+    emits('cityInfo', data);
     cityDate.flag = 1;
   } catch (err) {
     cityDate.flag = 0;
@@ -92,14 +127,22 @@ const searchBy = async (...args) => {
 
 let debounceHandler = debounce(async function () {
   if (searchInput.value.length > 2) {
+    listVisibility.value = true;
     const citiesList = await searchListCities();
     cityListRef.value = citiesList;
   } else {
+    cityListRef.value = '';
     listVisibility.value = false;
   }
 }, 400);
 
 watch(searchInput, debounceHandler);
+
+const onFocusOut = () => {
+  setTimeout(() => {
+    listVisibility.value = false;
+  }, 300);
+};
 </script>
 
 <template>
@@ -111,13 +154,14 @@ watch(searchInput, debounceHandler);
         @input="debounceHandler"
         type="text"
         @click="listVisibility = true"
+        @focusout="onFocusOut"
       />
       <img
         class="wrapper__search_img"
         src="../assets/general-imgs/magnifying-glass-svgrepo-com.svg"
         alt="lupa"
       />
-      <div class="wrapper__city-list" v-if="cityListRef.length > 0" v-show="listVisibility">
+      <div class="wrapper__city-list" v-show="listVisibility && cityListRef.length">
         <ul>
           <li
             v-for="(city, index) in cityListRef"
@@ -150,7 +194,7 @@ watch(searchInput, debounceHandler);
           src="../assets/general-imgs/calendar.svg"
           alt="calendar"
         />
-        <p>Thu, February 9, 2024</p>
+        <p v-show="cityDate.flag === 1">{{ toValidDate() }}</p>
       </div>
       <div class="wrapper__weather-secondary-time">
         <img class="wrapper__weather-secondary_img" src="../assets/general-imgs/clock.svg" alt="" />

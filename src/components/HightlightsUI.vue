@@ -1,5 +1,11 @@
 <script setup>
 import DisplayUI from './DisplayUI.vue';
+
+defineProps({
+  cityInfoProps: String,
+});
+
+const cityInfoLocal = cityInfoProps;
 </script>
 
 <template>
