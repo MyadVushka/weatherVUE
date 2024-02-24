@@ -1,11 +1,9 @@
 <script setup>
 import DisplayUI from './DisplayUI.vue';
 
-defineProps({
-  cityInfoProps: String,
+const props = defineProps({
+  cityInfoProps: Object
 });
-
-const cityInfoLocal = cityInfoProps;
 </script>
 
 <template>
@@ -15,17 +13,29 @@ const cityInfoLocal = cityInfoProps;
       <DisplayUI
         :displayTypeSrc="'/src/assets/general-imgs/wind-icon.svg'"
         :displayTypeTitle="'Wind'"
-        :displayInfoOne="'3.6'"
+        :displayInfoOne="
+          props?.cityInfoProps === undefined ? '' : String(props.cityInfoProps.wind.speed)
+        "
         :displayInfoTwo="'m/s'"
         :displayInfoThree="'Wind gusts'"
-        :displayInfoFour="'8.4 m/s'"
+        :displayInfoFour="
+          props?.cityInfoProps?.wind?.gust === undefined
+            ? 'm/s'
+            : String(props.cityInfoProps.wind.gust) + ' m/s'
+        "
       />
       <DisplayUI
         :displayTypeSrc="'/src/assets/general-imgs/pressure.svg'"
         :displayTypeTitle="'Pressure'"
-        :displayInfoOne="'765 mm'"
+        :displayInfoOne="
+          props?.cityInfoProps === undefined ? 'mm' : props.cityInfoProps.main.pressure + ' mm'
+        "
         :displayInfoThree="'Feels like'"
-        :displayInfoFour="'21 C'"
+        :displayInfoFour="
+          props?.cityInfoProps === undefined
+            ? 'C'
+            : Math.round(props.cityInfoProps.main.feels_like - 273) + ' C'
+        "
       />
     </div>
   </section>
@@ -42,7 +52,10 @@ const cityInfoLocal = cityInfoProps;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 60px;
+  width: 400px;
 }
 
 .wrapper__bottom {

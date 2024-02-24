@@ -217,6 +217,7 @@ const onFocusOut = () => {
   flex-direction: column;
   gap: 20px;
   position: relative;
+  width: 400px;
 }
 
 .wrapper__search_input {
@@ -236,14 +237,15 @@ const onFocusOut = () => {
 
 .wrapper__search_img {
   cursor: pointer;
-  right: 5%;
+  right: 15%;
   top: 50%;
   transform: translateY(-50%);
   width: 30px;
   position: absolute;
 }
 .wrapper__search-info_img {
-  width: 80px;
+  width: 120px;
+
   margin-bottom: 30px;
 }
 

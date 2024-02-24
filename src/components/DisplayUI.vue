@@ -6,7 +6,7 @@ defineProps({
   displayInfoTwo: String,
   displayInfoThree: String,
   displayInfoFour: String,
-  weatherInfo: String,
+  weatherInfo: String
 });
 </script>
 
@@ -16,7 +16,7 @@ defineProps({
       <h2 class="wrapper__displays-top_main-text">{{ displayTypeTitle }}</h2>
       <img class="wrapper__display-top_img" :src="displayTypeSrc" alt="typeBlock" />
       <div class="wrapper__displays-top_main-bottom-block">
-        <span>{{ displayInfoOne }}</span>
+        <span v-if="displayInfoOne?.length">{{ displayInfoOne }}</span>
         <span>{{ displayInfoTwo }}</span>
       </div>
     </div>
