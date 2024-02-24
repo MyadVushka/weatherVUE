@@ -244,7 +244,7 @@ const onFocusOut = () => {
   position: absolute;
 }
 .wrapper__search-info_img {
-  width: 120px;
+  width: 90px;
 
   margin-bottom: 30px;
 }

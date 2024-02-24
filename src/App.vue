@@ -1,15 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import SearchUI from './components/SearchUI.vue';
 import HightlightsUI from './components/HightlightsUI.vue';
 import BottomUI from './components/BottomUI.vue';
 
-navigator.geolocation.getCurrentPosition((position) => console.log(position));
 const globalCityInfo = ref();
-
-watch(globalCityInfo, () => {
-  console.log(globalCityInfo.value);
-});
 </script>
 
 <template>
